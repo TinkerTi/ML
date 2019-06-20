@@ -11,7 +11,8 @@ from sklearn.model_selection import GridSearchCV
 # reload(sys)
 # sys.setdefaultencoding('utf-8')
 
-data = pd.read_csv('bankTraining.csv')
+# data = pd.read_csv('/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv')
+data = pd.read_csv('./data/processed_bankTraining.csv')
 
 # x=data[["age","job","education","housing"]]
 x = data
