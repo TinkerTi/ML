@@ -1,0 +1,4 @@
+age,job,marital,education,default,housing,loan,contact,month,day_of_week,duration,campaign,pdays,previous,poutcome,emp.var.rate,cons.price.idx,cons.conf.idx,euribor3m,nr.employed,y
+44,services,divorced,high.school,no,no,no,cellular,may,mon,903,4,999,0,nonexistent,-1.8,92.893,-46.2,1.244,5099.1,yes
+
+40,entrepreneur,married,university.degree,no,yes,no,cellular,aug,mon,145,2,999,0,nonexistent,1.4,93.444,-36.1,4.97,5228.1,no
