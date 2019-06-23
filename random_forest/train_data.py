@@ -12,25 +12,21 @@ from sklearn.utils import shuffle
 from sklearn.metrics import classification_report
 
 from random_forest import smote
-import matplotlib.pyplot as plt
 
 
 def split_data(data):
     data_len = data['y'].count()
     split1 = int(data_len*0.80)
-    split2 = int(data_len*0.90)
     train_data = data[:split1]
-    cv_data = data[split1:split2]
-    test_data = data[split2:]
+    test_data = data[split1:]
 
-    return train_data, cv_data, test_data
+    return train_data,  test_data
 
 
 def resample_train_data(train_data, n, frac):
     numeric_attrs = ['age', 'duration', 'campaign', 'pdays', 'previous',
                  'emp.var.rate', 'cons.price.idx', 'cons.conf.idx',
                  'euribor3m', 'nr.employed',]
-    #numeric_attrs = train_data.drop('y',axis=1).columns
     pos_train_data_original = train_data[train_data['y'] == 1]
     pos_train_data = train_data[train_data['y'] == 1]
     new_count = n * pos_train_data['y'].count()
@@ -86,43 +82,27 @@ def train_evaluate(train_data, test_data, classifier, n=1, frac=1.0, threshold =
                                    target_names = ['no', 'yes'])
     prodict_y = (prodict_prob_y > threshold).astype(int)
     accuracy = np.mean(test_y.values == prodict_y)
-    print("Accuracy: {}".format(accuracy))    
+
+    print("Accuracy: {}".format(accuracy))
+
     print(report)
     fpr, tpr, thresholds = metrics.roc_curve(test_y, prodict_prob_y)
     precision, recall, thresholds = metrics.precision_recall_curve(test_y, prodict_prob_y)  
     test_auc = metrics.auc(fpr, tpr)
     plot_pr(test_auc, precision, recall, "yes")
-    
     return prodict_y
-  #  print("AUC: {}".format(test_auc))
 
-
-def select_model(train_data, cv_data):
-    for i in range(1):
-      #  print("n_estimators: {}".format(i))
-      #  print("threshold: {}".format(i/50.0))
-      #  print("n: {}".format(i))
-        forest = RandomForestClassifier(n_estimators=400, oob_score=True)
-        #lr = LogisticRegression(max_iter=100, C=1, random_state=0)
-        train_evaluate(train_data, cv_data, forest, n=7, frac=1.0, threshold=0.4)
-
-    
     
 # processed_data = '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
-processed_data = '../data/processed_bankTraining.csv'
-data = pd.read_csv(processed_data)
-train_data, cv_data, test_data = split_data(data)
-
+src_processed_data_path = '../data/src_processed_bankTraining.csv'
+test_processed_data_path='../data/test_processed_bankTraining.csv'
+# data = pd.read_csv(processed_data)
+# train_data,  test_data = split_data(data)
+train_data=pd.read_csv(src_processed_data_path)
+test_data=pd.read_csv(test_processed_data_path)
 features_list = train_data.drop('y',axis=1).columns
-select_model(train_data, cv_data)
-start_time = datetime.now()
-
 print('Training...')
 forest = RandomForestClassifier(n_estimators=400, oob_score=True)
 prodict_y = train_evaluate(train_data, test_data, forest, n=7, frac=1, threshold=0.40)
 
-end_time = datetime.now()
-delta_seconds = (end_time - start_time).seconds
-
-print("Cost time: {}s".format(delta_seconds))
 
