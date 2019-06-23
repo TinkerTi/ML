@@ -53,29 +53,14 @@ def trans_num_attrs(data, numeric_attrs):
 
 
 def fill_unknown(data, bin_attrs, cate_attrs, numeric_attrs):
-    # fill_attrs = ['education', 'default', 'housing', 'loan']
-    fill_attrs = []
     for i in bin_attrs+cate_attrs:
-        if data[data[i] == 'unknown']['y'].count() >0:
+        if data[data[i] == 'unknown']['y'].count() <500:
             # delete col containing unknown
             data = data[data[i] != 'unknown']
-        # else:
-        #     fill_attrs.append(i)
-
     data = encode_cate_attrs(data, cate_attrs)
     data = encode_bin_attrs(data, bin_attrs)
     data = trans_num_attrs(data, numeric_attrs)
     data['y'] = data['y'].map({'no': 0, 'yes': 1}).astype(int)
-    for i in fill_attrs:
-        test_data = data[data[i] == 'unknown']
-        testX = test_data.drop(fill_attrs, axis=1)
-        train_data = data[data[i] != 'unknown']
-        trainY = train_data[i]
-
-        trainX = train_data.drop(fill_attrs, axis=1)
-
-        test_data[i] = train_predict_unknown(trainX, trainY, testX)
-        data = pd.concat([train_data, test_data])
 
     return data
 
@@ -94,13 +79,19 @@ def pre_process_data():
     input_data_path = "../data/bankTraining.csv"
     processed_data_path = '../data/processed_bankTraining.csv'
     data = pd.read_csv(input_data_path)
-    data.info();
+    data.info()
+
+    for col in data.columns:
+        if type(data[col][0]) is str:
+            print(col+"\t"+str(data[data[col] == 'unknown']['y'].count()))
+
+    data = data.drop(['default','day_of_week','month'], axis=1)
     numeric_attrs = ['age', 'duration', 'campaign', 'pdays', 'previous',
                      'emp.var.rate', 'cons.price.idx', 'cons.conf.idx',
                      'euribor3m', 'nr.employed']
-    bin_attrs = ['default', 'housing', 'loan']
+    bin_attrs = [ 'housing', 'loan']
     cate_attrs = ['poutcome', 'education', 'job', 'marital',
-                  'contact', 'month','day_of_week']
+                  'contact']
 
     data = shuffle(data)
     data = fill_unknown(data, bin_attrs, cate_attrs, numeric_attrs)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from datetime import datetime
 
 import pandas as pd
@@ -16,11 +17,12 @@ import matplotlib.pyplot as plt
 
 def split_data(data):
     data_len = data['y'].count()
-    split1 = int(data_len*0.6)
-    split2 = int(data_len*0.8)
+    split1 = int(data_len*0.80)
+    split2 = int(data_len*0.90)
     train_data = data[:split1]
     cv_data = data[split1:split2]
     test_data = data[split2:]
+
     return train_data, cv_data, test_data
 
 
@@ -28,6 +30,7 @@ def resample_train_data(train_data, n, frac):
     numeric_attrs = ['age', 'duration', 'campaign', 'pdays', 'previous',
                  'emp.var.rate', 'cons.price.idx', 'cons.conf.idx',
                  'euribor3m', 'nr.employed',]
+    #numeric_attrs = train_data.drop('y',axis=1).columns
     pos_train_data_original = train_data[train_data['y'] == 1]
     pos_train_data = train_data[train_data['y'] == 1]
     new_count = n * pos_train_data['y'].count()
@@ -53,32 +56,7 @@ def resample_train_data(train_data, n, frac):
     return shuffle(train_data)
     
     
-def evaluate(test_predictY, test_y):
-    test_len = test_y.shape[0]
-    true_pos = 0
-    false_pos = 0
-    true_neg = 0
-    false_neg = 0
-    for i in range(test_len):
-        if test_predictY[i] == 1:
-            if test_y[i] == 1:
-                true_pos += 1
-            else:
-                false_pos += 1
-        else:
-            if test_y[i] == 0:
-                true_neg += 1
-            else:
-                false_neg += 1
-    
-    accuracy = 1.0 * (true_pos+true_neg) / test_len
-    precision  = 1.0 * true_pos / (true_pos + false_pos)
-    recall = 1.0 * true_pos / (true_pos + false_neg)
-    f1Score = 2 * precision * recall / (precision + recall)
-    print("Accuracy: {}".format(accuracy))
-    print("Precision: {}".format(precision ))
-    print("Recall: {}".format(recall))
-    print("F1 Score: {}".format(f1Score))
+
 
 
 def plot_pr(auc_score, precision, recall, label=None):  
@@ -94,8 +72,9 @@ def plot_pr(auc_score, precision, recall, label=None):
     pylab.show()
 
 
+
 def train_evaluate(train_data, test_data, classifier, n=1, frac=1.0, threshold = 0.5):  
-    train_data = resample_train_data(train_data, n, frac)
+    # train_data = resample_train_data(train_data, n, frac)
     train_X = train_data.drop('y',axis=1)
     train_y = train_data['y']
     test_X = test_data.drop('y', axis=1)
@@ -115,45 +94,35 @@ def train_evaluate(train_data, test_data, classifier, n=1, frac=1.0, threshold =
     plot_pr(test_auc, precision, recall, "yes")
     
     return prodict_y
+  #  print("AUC: {}".format(test_auc))
 
 
 def select_model(train_data, cv_data):
     for i in range(1):
+      #  print("n_estimators: {}".format(i))
+      #  print("threshold: {}".format(i/50.0))
+      #  print("n: {}".format(i))
         forest = RandomForestClassifier(n_estimators=400, oob_score=True)
+        #lr = LogisticRegression(max_iter=100, C=1, random_state=0)
         train_evaluate(train_data, cv_data, forest, n=7, frac=1.0, threshold=0.4)
-    
 
-def find_key_attrs(forest):
-    feature_importance = forest.feature_importances_
-    feature_importance = 100.0 * (feature_importance / feature_importance.max())
-    fi_threshold = 5
-    important_idx = np.where(feature_importance > fi_threshold)[0]
-    important_features = features_list[important_idx]
-    print ("\n", important_features.shape[0], "Important features(>", \
-          fi_threshold, "% of max importance)...\n")#, \
-            #important_features
-    sorted_idx = np.argsort(feature_importance[important_idx])[::-1]
-    #get the figure about important features
-    pos = np.arange(sorted_idx.shape[0]) + .5
-    #plt.subplot(1, 2, 2)
-    plt.title('Feature Importance')
-    plt.barh(pos, feature_importance[important_idx][sorted_idx[::-1]], \
-            color='r',align='center')
-    plt.yticks(pos, important_features[sorted_idx[::-1]])
-    plt.xlabel('Relative Importance')
-    plt.draw()
-    plt.show()
     
     
-# '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
-data = pd.read_csv('../data/processed_bankTraining.csv')
+# processed_data = '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
+processed_data = '../data/processed_bankTraining.csv'
+data = pd.read_csv(processed_data)
 train_data, cv_data, test_data = split_data(data)
 
 features_list = train_data.drop('y',axis=1).columns
 select_model(train_data, cv_data)
 start_time = datetime.now()
+
+print('Training...')
 forest = RandomForestClassifier(n_estimators=400, oob_score=True)
 prodict_y = train_evaluate(train_data, test_data, forest, n=7, frac=1, threshold=0.40)
+
 end_time = datetime.now()
 delta_seconds = (end_time - start_time).seconds
+
+print("Cost time: {}s".format(delta_seconds))
 
