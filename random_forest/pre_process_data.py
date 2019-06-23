@@ -1,4 +1,3 @@
-from datetime import datetime
 import pandas as pd
 
 from sklearn.ensemble import RandomForestClassifier
@@ -50,10 +49,6 @@ def trans_num_attrs(data, numeric_attrs):
     bining_attr = 'age'
     data[bining_attr] = pd.qcut(data[bining_attr], bining_num)
     data[bining_attr] = pd.factorize(data[bining_attr])[0]+1
-
-    for i in numeric_attrs:
-        scaler = preprocessing.StandardScaler()
-        # data[i] = scaler.fit_transform(data[i])
     return data
 
 
@@ -94,14 +89,12 @@ def train_predict_unknown(trainX, trainY, testX):
 
 
 def pre_process_data():
-    print(sys.argv[0])
     # input_data_path = "/Users/tk/Code/custom_code/ML-master/data/bankTraining.csv"
     # processed_data_path = '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
     input_data_path = "../data/bankTraining.csv"
     processed_data_path = '../data/processed_bankTraining.csv'
-    print("Loading data...")
     data = pd.read_csv(input_data_path)
-    print("Preprocessing data...")
+    data.info();
     numeric_attrs = ['age', 'duration', 'campaign', 'pdays', 'previous',
                      'emp.var.rate', 'cons.price.idx', 'cons.conf.idx',
                      'euribor3m', 'nr.employed']
@@ -114,4 +107,7 @@ def pre_process_data():
     data.to_csv(processed_data_path, index=False)
 
 pre_process_data()
+data = pd.read_csv('../data/processed_bankTraining.csv')
+data.info()
+
 

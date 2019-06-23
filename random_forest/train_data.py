@@ -11,6 +11,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import classification_report
 
 from random_forest import smote
+import matplotlib.pyplot as plt
 
 
 def split_data(data):
@@ -20,7 +21,6 @@ def split_data(data):
     train_data = data[:split1]
     cv_data = data[split1:split2]
     test_data = data[split2:]
-    
     return train_data, cv_data, test_data
 
 
@@ -28,7 +28,6 @@ def resample_train_data(train_data, n, frac):
     numeric_attrs = ['age', 'duration', 'campaign', 'pdays', 'previous',
                  'emp.var.rate', 'cons.price.idx', 'cons.conf.idx',
                  'euribor3m', 'nr.employed',]
-    #numeric_attrs = train_data.drop('y',axis=1).columns
     pos_train_data_original = train_data[train_data['y'] == 1]
     pos_train_data = train_data[train_data['y'] == 1]
     new_count = n * pos_train_data['y'].count()
@@ -93,20 +92,6 @@ def plot_pr(auc_score, precision, recall, label=None):
     pylab.grid(True, linestyle='-', color='0.75')  
     pylab.plot(recall, precision, lw=1)      
     pylab.show()
-    
-
-
-def plot_roc(auc_score, fpr, tpr, label=None):  
-    pylab.figure(num=None, figsize=(6, 5))  
-    pylab.xlim([0.0, 1.0])  
-    pylab.ylim([0.0, 1.0])
-    pylab.xlabel('False positive rate')  
-    pylab.ylabel('True positive rate')  
-    pylab.title('ROC (AUC=%0.2f) / %s' % (auc_score, label))  
-    pylab.fill_between(fpr, tpr, alpha=0.2)  
-    pylab.grid(True, linestyle='-', color='0.75')  
-    pylab.plot(fpr, tpr, lw=1)      
-    pylab.show()
 
 
 def train_evaluate(train_data, test_data, classifier, n=1, frac=1.0, threshold = 0.5):  
@@ -130,17 +115,11 @@ def train_evaluate(train_data, test_data, classifier, n=1, frac=1.0, threshold =
     plot_pr(test_auc, precision, recall, "yes")
     
     return prodict_y
-  #  print("AUC: {}".format(test_auc))
-  #  plot_roc(test_auc, fpr, tpr, "yes")
 
 
 def select_model(train_data, cv_data):
     for i in range(1):
-      #  print("n_estimators: {}".format(i))
-      #  print("threshold: {}".format(i/50.0))
-      #  print("n: {}".format(i))
         forest = RandomForestClassifier(n_estimators=400, oob_score=True)
-        #lr = LogisticRegression(max_iter=100, C=1, random_state=0)
         train_evaluate(train_data, cv_data, forest, n=7, frac=1.0, threshold=0.4)
     
 
@@ -166,22 +145,15 @@ def find_key_attrs(forest):
     plt.show()
     
     
-# processed_data = '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
-processed_data = '../data/processed_bankTraining.csv'
-data = pd.read_csv(processed_data)
+# '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
+data = pd.read_csv('../data/processed_bankTraining.csv')
 train_data, cv_data, test_data = split_data(data)
 
 features_list = train_data.drop('y',axis=1).columns
 select_model(train_data, cv_data)
 start_time = datetime.now()
-import matplotlib.pyplot as plt
-print('Training...')
 forest = RandomForestClassifier(n_estimators=400, oob_score=True)
 prodict_y = train_evaluate(train_data, test_data, forest, n=7, frac=1, threshold=0.40)
-# find_key_attrs(forest)
-
 end_time = datetime.now()
 delta_seconds = (end_time - start_time).seconds
-
-print("Cost time: {}s".format(delta_seconds))
 
