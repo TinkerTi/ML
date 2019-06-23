@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Jun 14 14:37:24 2017
-
-@author: liulo
-"""
 from datetime import datetime
 
 import pandas as pd

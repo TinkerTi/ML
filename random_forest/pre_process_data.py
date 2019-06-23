@@ -53,7 +53,7 @@ def trans_num_attrs(data, numeric_attrs):
 
     for i in numeric_attrs:
         scaler = preprocessing.StandardScaler()
-        #data[i] = scaler.fit_transform(data[i])
+        # data[i] = scaler.fit_transform(data[i])
     return data
 
 
@@ -71,16 +71,16 @@ def fill_unknown(data, bin_attrs, cate_attrs, numeric_attrs):
     data = encode_bin_attrs(data, bin_attrs)
     data = trans_num_attrs(data, numeric_attrs)
     data['y'] = data['y'].map({'no': 0, 'yes': 1}).astype(int)
-    # for i in fill_attrs:
-    #     test_data = data[data[i] == 'unknown']
-    #     testX = test_data.drop(fill_attrs, axis=1)
-    #     train_data = data[data[i] != 'unknown']
-    #     trainY = train_data[i]
-    #
-    #     trainX = train_data.drop(fill_attrs, axis=1)
-    #
-    #     test_data[i] = train_predict_unknown(trainX, trainY, testX)
-    #     data = pd.concat([train_data, test_data])
+    for i in fill_attrs:
+        test_data = data[data[i] == 'unknown']
+        testX = test_data.drop(fill_attrs, axis=1)
+        train_data = data[data[i] != 'unknown']
+        trainY = train_data[i]
+
+        trainX = train_data.drop(fill_attrs, axis=1)
+
+        test_data[i] = train_predict_unknown(trainX, trainY, testX)
+        data = pd.concat([train_data, test_data])
 
     return data
 
@@ -93,7 +93,7 @@ def train_predict_unknown(trainX, trainY, testX):
     return pd.DataFrame(test_predictY,index=testX.index)
 
 
-def preprocess_data():
+def pre_process_data():
     print(sys.argv[0])
     # input_data_path = "/Users/tk/Code/custom_code/ML-master/data/bankTraining.csv"
     # processed_data_path = '/Users/tk/Code/custom_code/ML-master/data/processed_bankTraining.csv'
@@ -113,9 +113,5 @@ def preprocess_data():
     data = fill_unknown(data, bin_attrs, cate_attrs, numeric_attrs)
     data.to_csv(processed_data_path, index=False)
 
+pre_process_data()
 
-start_time = datetime.now()
-preprocess_data()
-end_time = datetime.now()
-delta_seconds = (end_time - start_time).seconds
-print("Cost time: {}s".format(delta_seconds))
